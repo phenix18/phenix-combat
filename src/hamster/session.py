@@ -18,6 +18,8 @@
 # along with Project Hamster.  If not, see <http://www.gnu.org/licenses/>.
 
 import dbus
+import logging
+logger = logging.getLogger(__name__)
 
 class DbusSessionListener(object):
     """Listen for GNOME manager end session event."""
@@ -35,34 +37,36 @@ class DbusSessionListener(object):
 
         # Get SessionManager interface
         session_bus = dbus.SessionBus()
-        session_manager = session_bus.get_object("org.gnome.SessionManager",
-            "/org/gnome/SessionManager")
-        self.__session_manager_iface = dbus.Interface(session_manager,
-            dbus_interface="org.gnome.SessionManager")
-        self.__client_id = self.__session_manager_iface.RegisterClient("", "")
+        try:
+            session_manager = session_bus.get_object("org.gnome.SessionManager",
+                "/org/gnome/SessionManager")
+            self.__session_manager_iface = dbus.Interface(session_manager,
+                dbus_interface="org.gnome.SessionManager")
+            self.__client_id = self.__session_manager_iface.RegisterClient("", "")
 
-        # Get SessionManager.ClientPrivate interface
-        session_client = session_bus.get_object("org.gnome.SessionManager",
-            self.__client_id)
-        self.__session_client_private_iface = dbus.Interface(session_client,
-            dbus_interface="org.gnome.SessionManager.ClientPrivate")
+            # Get SessionManager.ClientPrivate interface
+            session_client = session_bus.get_object("org.gnome.SessionManager",
+                self.__client_id)
+            self.__session_client_private_iface = dbus.Interface(session_client,
+                dbus_interface="org.gnome.SessionManager.ClientPrivate")
 
-        # Connect to the needed signals
-        session_bus.add_signal_receiver(self.__query_end_session_handler,
-            signal_name = "QueryEndSession",
-            dbus_interface = "org.gnome.SessionManager.ClientPrivate",
-            bus_name = "org.gnome.SessionManager")
+            # Connect to the needed signals
+            session_bus.add_signal_receiver(self.__query_end_session_handler,
+                signal_name = "QueryEndSession",
+                dbus_interface = "org.gnome.SessionManager.ClientPrivate",
+                bus_name = "org.gnome.SessionManager")
 
-        session_bus.add_signal_receiver(self.__end_session_handler,
-            signal_name = "EndSession",
-            dbus_interface = "org.gnome.SessionManager.ClientPrivate",
-            bus_name = "org.gnome.SessionManager")
+            session_bus.add_signal_receiver(self.__end_session_handler,
+                signal_name = "EndSession",
+                dbus_interface = "org.gnome.SessionManager.ClientPrivate",
+                bus_name = "org.gnome.SessionManager")
 
-        session_bus.add_signal_receiver(self.__stop_handler,
-            signal_name = "Stop",
-            dbus_interface = "org.gnome.SessionManager.ClientPrivate",
-            bus_name = "org.gnome.SessionManager")
-
+            session_bus.add_signal_receiver(self.__stop_handler,
+                signal_name = "Stop",
+                dbus_interface = "org.gnome.SessionManager.ClientPrivate",
+                bus_name = "org.gnome.SessionManager")
+        except dbus.exceptions.DBusException:
+            logger.warning("Unable to connect to GNOME session manager, stop trcking on logout won't work")
 
     def __query_end_session_handler(self, flags):
         """Inform that the session is about to end. It must reply with

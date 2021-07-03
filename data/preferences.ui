@@ -49,6 +49,8 @@
                         <property name="use_underline">True</property>
                         <property name="xalign">0.5</property>
                         <property name="draw_indicator">True</property>
+                        <property name="has_tooltip">True</property>
+                        <property name="tooltip_text" translatable="yes">Work only on GNOME</property>
                       </object>
                       <packing>
                         <property name="expand">False</property>
