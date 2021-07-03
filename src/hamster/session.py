@@ -66,7 +66,7 @@ class DbusSessionListener(object):
                 dbus_interface = "org.gnome.SessionManager.ClientPrivate",
                 bus_name = "org.gnome.SessionManager")
         except dbus.exceptions.DBusException:
-            logger.warning("Unable to connect to GNOME session manager, stop trcking on logout won't work")
+            logger.info("Unable to connect to GNOME session manager, stop tracking on logout won't work")
 
     def __query_end_session_handler(self, flags):
         """Inform that the session is about to end. It must reply with
